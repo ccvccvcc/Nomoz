@@ -1,0 +1,37 @@
+name: APK yigish
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.10.2
+
+      - name: Zipni ochish
+        run: |
+          mkdir proj
+          unzip -o ./*.zip -d proj
+
+      - name: APK yigish
+        run: |
+          D=$(dirname "$(find proj -name "build.gradle.kts" -o -name "build.gradle" | head -n 1)")
+          cd "$D"
+          gradle assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: namoz-signali-apk
+          path: proj/**/app-debug.apk
